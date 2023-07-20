@@ -1,0 +1,24 @@
+IPv6 is faster and more reliable than IPv4, and it's so smooth that you won't even feel any latency if you have a good internet connection. However, Terraria doesn't natively support IPv6 for online multiplayer. But don't worry, this mod allows you to play multiplayer over IPv6
+
+But hold on, before you dive in, make sure both you and your buddies have an IPv6 connection. You can easily check by visiting this website: http://ipv6-test.com/
+
+As a host: You must have a public IPv6 address
+As a client: You must be able to have an IPv6 connection with the host. Type "ping -6 <Host's IPv6 Address>" in cmd to test it
+
+The host just open a server as usual. The client should choose "Join via IP", copy and paste the host's IPv6 address when Terraria tells you to enter server IP address, and then connect. That's it!
+
+This mod uses tinyPortMapper by wangyu- to forward the IPv6 connection to the IPv4 port. Github page here: https://github.com/wangyu-/tinyPortMapper
+
+
+
+IPv6比IPv4更快、更可靠，网络好的情况下甚至感受不到延迟，比Frp联机要丝滑得多。然而，泰拉本身不支持IPv6联机，而这个模组让你可以通过IPv6联机，纵享丝滑！
+
+在使用这个模组之前，确保你和你的朋友都有IPv6连接。你可以在这里检测：http://ipv6-test.com/
+如果没有，可以参考这篇教程来开启：https://ipw.cn/doc/ipv6/user/enable_ipv6.html
+
+作为主机：你必须有一个公共的IPv6地址。
+作为客机：你必须能够与主机建立一个IPv6连接。在命令提示符(cmd)中输入"ping -6 <主机的IPv6地址>"以测试
+
+主机和平常一样正常开服。客机选择通过IP加入，将主机的IPv6地址复制粘贴到泰拉里的服务器IP地址栏，然后连接即可
+
+本Mod使用wangyu-的tinyPortMapper将IPv6连接转发到IPv4端口，Github 页面：https://github.com/wangyu-/tinyPortMapper

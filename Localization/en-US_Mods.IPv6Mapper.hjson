@@ -1,0 +1,78 @@
+IPAddress: IPv6 Address: {0} (click to copy)
+IPAddressCopied: IPv6 Address: {0} (copied!)
+IPAddressRaw: "IPv6 Address: "
+ConfigTip: If it is wrong, change it in IPv6 Multiplayer Support's mod config!
+ErrorGetIP: "An error occurred while getting IPv6 address: "
+NotGetIP: IPv6 address not found
+TinyMapperSaved: "tinymapper.exe has been saved to: "
+TinyMapperSaveError: "An error occurred while saving the file: "
+TypeHere: Type here
+
+Configs: {
+	Config: {
+		DisplayName: Mod Config
+
+		OpenFile: {
+			Label: Open Config File
+			Tooltip: ""
+		}
+
+		CustomIPv6Address: {
+			Label: Custom IPv6 Address
+			Tooltip: If the automatically detected IPv6 address is wrong, you can customize it here
+		}
+
+		CustomMappedRemotePort: {
+			Label: Custom Remote Mapping Port
+			Tooltip:
+				'''
+				Customize which port to map local IPv4 to IPv6
+				Don't change this if you don't know what it is
+				'''
+		}
+
+		CustomMappedLocalPort: {
+			Label: Custom Local Mapping Port
+			Tooltip:
+				'''
+				Customize which port to map IPv6 to local IPv4
+				Don't change this if you don't know what it is
+				'''
+		}
+
+		OpenFirewall: {
+			Label: Open Firewall Control Panel
+			Tooltip: As a host, if you want others to connect to your server, you must disable the firewall
+		}
+
+		OpenNetworkInfo: {
+			Label: Check Network Information
+			Tooltip: You can check your IPv6 address here
+		}
+
+		OpenNetworkControl: {
+			Label: Open Network Control Panel
+			Tooltip: You can manually check the use of IPv6 protocol here
+		}
+
+		IPv6Test1: {
+			Label: IPv6 Test Website
+			Tooltip: ""
+		}
+
+		IPv6Test2: {
+			Label: IPv6 Test Website 2
+			Tooltip: ""
+		}
+
+		IPv6Test3: {
+			Label: IPv6 Test Website 3
+			Tooltip: ""
+		}
+
+		IPv6Tutorial: {
+			Label: Google Search: "How to enable IPv6"
+			Tooltip: ""
+		}
+	}
+}

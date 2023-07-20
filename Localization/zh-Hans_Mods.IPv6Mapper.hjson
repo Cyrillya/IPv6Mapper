@@ -1,0 +1,78 @@
+IPAddress: IPv6 地址：{0} (点击以复制)
+IPAddressCopied: IPv6 地址：{0} (已复制！)
+IPAddressRaw: "IPv6 地址: "
+ConfigTip: 如果地址是错的，请在IPv6 Multiplayer Support的模组配置修改！
+ErrorGetIP: 读取IPv6地址时出现错误：
+NotGetIP: 未读取到IPv6地址
+TinyMapperSaved: tinymapper.exe已被保存到：
+TinyMapperSaveError: 保存文件时发生错误：
+TypeHere: 输入文本...
+
+Configs: {
+	Config: {
+		DisplayName: 模组配置
+
+		OpenFile: {
+			Label: 打开配置文件
+			Tooltip: ""
+		}
+
+		CustomIPv6Address: {
+			Label: 自定义IPv6地址
+			Tooltip: 如果自动检测的IPv6地址出错，你可以在此自定义
+		}
+
+		CustomMappedRemotePort: {
+			Label: 自定义远程映射端口
+			Tooltip:
+				'''
+				自定义将本地IPv4映射到IPv6的哪个端口上
+				若你不知道这是什么意思，请不要更改此项
+				'''
+		}
+
+		CustomMappedLocalPort: {
+			Label: 自定义本地映射端口
+			Tooltip:
+				'''
+				自定义将IPv6映射到本地IPv4的哪个端口上
+				若你不知道这是什么意思，请不要更改此项
+				'''
+		}
+
+		OpenFirewall: {
+			Label: 打开防火墙控制面板
+			Tooltip: 作为主机，如果要他人连接上你的服务器，必须关闭防火墙
+		}
+
+		OpenNetworkInfo: {
+			Label: 查看网络信息
+			Tooltip: 可在此查看你的IPv6地址
+		}
+
+		OpenNetworkControl: {
+			Label: 打开网络控制面板
+			Tooltip: 你可以在此处手动勾选使用IPv6协议
+		}
+
+		IPv6Test1: {
+			Label: IPv6检测网站
+			Tooltip: ""
+		}
+
+		IPv6Test2: {
+			Label: IPv6检测网站2
+			Tooltip: 网站上不去的话，可以试试这个
+		}
+
+		IPv6Test3: {
+			Label: IPv6检测网站3
+			Tooltip: 网站上不去的话，可以试试这个
+		}
+
+		IPv6Tutorial: {
+			Label: IPv6开启教程
+			Tooltip: ""
+		}
+	}
+}

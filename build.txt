@@ -1,0 +1,3 @@
+displayName = IPv6 Multiplayer Support
+author = Cyrilly
+version = 1.0
