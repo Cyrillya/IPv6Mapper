@@ -232,7 +232,7 @@ public class IPv6Mapper : Mod
             _tinyMapper = null;
         }
 
-        var fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "._cache_tinymapper.exe");
+        var fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tinymapper.exe");
         _tinyMapper = Process.Start(fileName, arguments);
     }
 
