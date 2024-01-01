@@ -31,6 +31,7 @@ public class IPv6Mapper : Mod
     public override void Unload() {
         Config = null;
         OnSubmitServerPortInfo = null;
+        Netplay.OnDisconnect -= CloseTinyMapper;
     }
 
     public override void Load() {
@@ -205,6 +206,19 @@ public class IPv6Mapper : Mod
             Netplay.ServerIPText = serverIPText;
             Netplay.ListenPort = listenPort;
         };
+
+        // Close client-side tinymapper process on disconnect
+        Netplay.OnDisconnect += CloseTinyMapper;
+
+        // Close server-side tinymapper process when server shuts down.
+        // Yes, I agree that hooking to a messaging system seem weird, but this
+        // is what the game uses to check server liveliness
+        On_NetMessage.EnsureLocalPlayerIsPresent += orig => {
+            orig.Invoke();
+            if (Netplay.Disconnect) {
+                CloseTinyMapper();
+            }
+        };
     }
 
     public override void PostSetupContent() {
@@ -234,6 +248,14 @@ public class IPv6Mapper : Mod
 
         var fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tinymapper.exe");
         _tinyMapper = Process.Start(fileName, arguments);
+    }
+
+    private static void CloseTinyMapper() {
+        Console.WriteLine("CloseTinyMapper");
+        if (_tinyMapper is not null) {
+            _tinyMapper.Kill();
+            _tinyMapper = null;
+        }
     }
 
     private void WriteIPv6Info() {
