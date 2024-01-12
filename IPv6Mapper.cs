@@ -3,16 +3,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Reflection;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using ReLogic.OS;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
-using Terraria.Social;
 using static System.Int32;
 
 namespace IPv6Mapper;
@@ -27,6 +26,7 @@ public class IPv6Mapper : Mod
     internal static int IPv6DetectTimer;
     internal static bool IsInIPv6Server;
     private static Process _tinyMapper;
+    private PortMapper _nativeMapper;
 
     public override void Unload() {
         Config = null;
@@ -41,17 +41,13 @@ public class IPv6Mapper : Mod
             orig.Invoke();
 
             // Kill tinyMapper
-            if (_tinyMapper is not null) {
-                _tinyMapper.Kill();
-                _tinyMapper = null;
-            }
+            CloseTinyMapper();
         };
 
         On_Main.DrawMenu += (orig, self, time) => {
             // Kill tinyMapper
-            if (Main.menuMode is MenuID.Title && _tinyMapper is not null) {
-                _tinyMapper.Kill();
-                _tinyMapper = null;
+            if (Main.menuMode is MenuID.Title) {
+                CloseTinyMapper();
             }
 
             // Select IP from list
@@ -78,7 +74,7 @@ public class IPv6Mapper : Mod
                             Main.statusText = Language.GetTextValue("Net.ConnectingTo", Main.getIP);
 
                             var arguments = $"-l127.0.0.1:{Main.getPort} -r[{realIP}]:{realPort} -t";
-                            OpenTinyMapper(arguments);
+                            OpenTinyMapper(arguments, AddressFamily.InterNetwork, int.Parse(Main.getPort), ipAddress, realPort);
 
                             IPv6Address = realIP;
                             IsInIPv6Server = true;
@@ -159,8 +155,9 @@ public class IPv6Mapper : Mod
                 return;
             }
 
-            var arguments = $"-l[{address}]:{Config.CustomMappedRemotePort} -r127.0.0.1:{Netplay.ListenPort} -t";
-            OpenTinyMapper(arguments);
+            var arguments = $"-l[::]:{Config.CustomMappedRemotePort} -r127.0.0.1:{Netplay.ListenPort} -t";
+            OpenTinyMapper(arguments, AddressFamily.InterNetworkV6, int.Parse(Config.CustomMappedRemotePort),
+                           IPAddress.Loopback, Netplay.ListenPort);
         };
 
         // 客机
@@ -182,7 +179,8 @@ public class IPv6Mapper : Mod
 
             OnSubmitServerPortInfo.Invoke(null, new object[] {Main.getPort});
             var arguments = $"-l127.0.0.1:{Main.getPort} -r[{ip}]:{Config.CustomMappedRemotePort} -t";
-            OpenTinyMapper(arguments);
+            OpenTinyMapper(arguments, AddressFamily.InterNetwork, int.Parse(Main.getPort),
+                           IPAddress.Parse(ip), int.Parse(Config.CustomMappedRemotePort));
 
             IPv6Address = ip;
             IsInIPv6Server = true;
@@ -240,22 +238,25 @@ public class IPv6Mapper : Mod
         }
     }
 
-    private static void OpenTinyMapper(string arguments) {
-        if (_tinyMapper is not null) {
-            _tinyMapper.Kill();
-            _tinyMapper = null;
-        }
+    private void OpenTinyMapper(string arguments, AddressFamily srcFamily, int srcPort,
+                                IPAddress dstAddr, int dstPort) {
+        CloseTinyMapper();
 
-        var fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tinymapper.exe");
-        _tinyMapper = Process.Start(fileName, arguments);
+        if (Config.UseTinyPortMapper && Platform.IsWindows) {
+            var fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tinymapper.exe");
+            _tinyMapper = Process.Start(fileName, arguments);
+        } else {
+            _nativeMapper = new PortMapper(srcFamily, srcPort, dstAddr, dstPort);
+            _nativeMapper.Start();
+        }
     }
 
-    private static void CloseTinyMapper() {
-        Console.WriteLine("CloseTinyMapper");
+    private void CloseTinyMapper() {
         if (_tinyMapper is not null) {
             _tinyMapper.Kill();
             _tinyMapper = null;
         }
+        _nativeMapper?.Stop();
     }
 
     private void WriteIPv6Info() {
