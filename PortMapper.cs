@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using Terraria;
 
 namespace IPv6Mapper;
 
@@ -33,8 +34,7 @@ public class PortMapper
     }
 
     public static AddressFamily TheOtherFamily(AddressFamily family) {
-        return family == AddressFamily.InterNetworkV6 ? AddressFamily.InterNetwork :
-                                                        AddressFamily.InterNetworkV6;
+        return family == AddressFamily.InterNetworkV6 ? AddressFamily.InterNetwork : AddressFamily.InterNetworkV6;
     }
 
     public PortMapper(AddressFamily srcFamily, int srcPort, IPAddress dstAddr, int dstPort) {
@@ -74,11 +74,12 @@ public class PortMapper
                 relay.Connect(dstEndPoint);
                 // Connection extablished. Now start worker threads to
                 // forward data in both directions.
-                reqThread = new Thread(() => {DataForward(reqPair);});
-                rspThread = new Thread(() => {DataForward(rspPair);});
+                reqThread = new Thread(() => { DataForward(reqPair); });
+                rspThread = new Thread(() => { DataForward(rspPair); });
                 reqThread.Start();
                 rspThread.Start();
-            } catch {
+            }
+            catch {
                 tcpListener.Close();
                 break;
             }
@@ -91,12 +92,18 @@ public class PortMapper
     private static void DataForward(SocketPair pair) {
         try {
             while (true) {
+                if (pair.srcSocket is null || pair.dstSocket is null) {
+                    pair.Close();
+                    return;
+                }
+
                 int bytesRead = pair.srcSocket.Receive(pair.buffer, SocketFlags.None);
                 if (bytesRead > 0) {
                     pair.dstSocket.Send(pair.buffer, bytesRead, SocketFlags.None);
                 }
             }
-        } catch {
+        }
+        catch {
             pair.Close();
         }
     }

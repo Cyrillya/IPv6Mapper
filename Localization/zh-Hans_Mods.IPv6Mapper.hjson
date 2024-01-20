@@ -74,10 +74,5 @@ Configs: {
 			Label: IPv6开启教程
 			Tooltip: ""
 		}
-
-		UseTinyPortMapper: {
-			// Label: Use Tiny Port Mapper
-			// Tooltip: ""
-		}
 	}
 }

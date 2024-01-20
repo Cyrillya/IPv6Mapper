@@ -25,13 +25,12 @@ public class IPv6Mapper : Mod
     internal static string IPv6Address;
     internal static int IPv6DetectTimer;
     internal static bool IsInIPv6Server;
-    private static Process _tinyMapper;
     private PortMapper _nativeMapper;
 
     public override void Unload() {
         Config = null;
         OnSubmitServerPortInfo = null;
-        Netplay.OnDisconnect -= CloseTinyMapper;
+        Netplay.OnDisconnect -= CloseMapper;
     }
 
     public override void Load() {
@@ -41,13 +40,13 @@ public class IPv6Mapper : Mod
             orig.Invoke();
 
             // Kill tinyMapper
-            CloseTinyMapper();
+            CloseMapper();
         };
 
         On_Main.DrawMenu += (orig, self, time) => {
             // Kill tinyMapper
             if (Main.menuMode is MenuID.Title) {
-                CloseTinyMapper();
+                CloseMapper();
             }
 
             // Select IP from list
@@ -65,7 +64,7 @@ public class IPv6Mapper : Mod
                         var realPort = Main.recentPort[num45];
                         var realIP = Main.recentIP[num45];
                         if (IPAddress.TryParse(realIP, out var ipAddress) &&
-                            ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6 &&
+                            ipAddress.AddressFamily == AddressFamily.InterNetworkV6 &&
                             TryParse(Config.CustomMappedLocalPort, out int port)) {
                             Netplay.ListenPort = port;
                             Main.getIP = "127.0.0.1";
@@ -73,8 +72,7 @@ public class IPv6Mapper : Mod
                             Main.menuMode = 14;
                             Main.statusText = Language.GetTextValue("Net.ConnectingTo", Main.getIP);
 
-                            var arguments = $"-l127.0.0.1:{Main.getPort} -r[{realIP}]:{realPort} -t";
-                            OpenTinyMapper(arguments, AddressFamily.InterNetwork, int.Parse(Main.getPort), ipAddress, realPort);
+                            OpenMapper( AddressFamily.InterNetwork, Parse(Main.getPort), ipAddress, realPort);
 
                             IPv6Address = realIP;
                             IsInIPv6Server = true;
@@ -151,12 +149,11 @@ public class IPv6Mapper : Mod
             }
 
             if (!IPAddress.TryParse(address, out var ipAddress) ||
-                ipAddress.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6) {
+                ipAddress.AddressFamily != AddressFamily.InterNetworkV6) {
                 return;
             }
 
-            var arguments = $"-l[::]:{Config.CustomMappedRemotePort} -r127.0.0.1:{Netplay.ListenPort} -t";
-            OpenTinyMapper(arguments, AddressFamily.InterNetworkV6, int.Parse(Config.CustomMappedRemotePort),
+            OpenMapper( AddressFamily.InterNetworkV6, Parse(Config.CustomMappedRemotePort),
                            IPAddress.Loopback, Netplay.ListenPort);
         };
 
@@ -168,7 +165,7 @@ public class IPv6Mapper : Mod
                 typeof(Main).GetMethod("OnSubmitServerPort", BindingFlags.NonPublic | BindingFlags.Static);
 
             if (!IPAddress.TryParse(ip, out var ipAddress) ||
-                ipAddress.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6 ||
+                ipAddress.AddressFamily != AddressFamily.InterNetworkV6 ||
                 OnSubmitServerPortInfo == null) {
                 orig.Invoke(ip);
                 return;
@@ -178,9 +175,8 @@ public class IPv6Mapper : Mod
             Main.getPort = Config.CustomMappedLocalPort;
 
             OnSubmitServerPortInfo.Invoke(null, new object[] {Main.getPort});
-            var arguments = $"-l127.0.0.1:{Main.getPort} -r[{ip}]:{Config.CustomMappedRemotePort} -t";
-            OpenTinyMapper(arguments, AddressFamily.InterNetwork, int.Parse(Main.getPort),
-                           IPAddress.Parse(ip), int.Parse(Config.CustomMappedRemotePort));
+            OpenMapper(AddressFamily.InterNetwork, Parse(Main.getPort), 
+                IPAddress.Parse(ip), Parse(Config.CustomMappedRemotePort));
 
             IPv6Address = ip;
             IsInIPv6Server = true;
@@ -189,7 +185,7 @@ public class IPv6Mapper : Mod
         // 保存到最近服务器
         On_Netplay.AddCurrentServerToRecentList += orig => {
             if (!IsInIPv6Server || !IPAddress.TryParse(IPv6Address, out var ipAddress) ||
-                ipAddress.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6) {
+                ipAddress.AddressFamily != AddressFamily.InterNetworkV6) {
                 orig.Invoke();
                 return;
             }
@@ -206,56 +202,23 @@ public class IPv6Mapper : Mod
         };
 
         // Close client-side tinymapper process on disconnect
-        Netplay.OnDisconnect += CloseTinyMapper;
+        Netplay.OnDisconnect += CloseMapper;
 
-        // Close server-side tinymapper process when server shuts down.
-        // Yes, I agree that hooking to a messaging system seem weird, but this
-        // is what the game uses to check server liveliness
-        On_NetMessage.EnsureLocalPlayerIsPresent += orig => {
+        // Close server-side tinymapper process when server shuts down
+        On_Netplay.StopBroadCasting += orig => {
             orig.Invoke();
-            if (Netplay.Disconnect) {
-                CloseTinyMapper();
-            }
+            CloseMapper();
         };
     }
 
-    public override void PostSetupContent() {
-        string targetFilePath = AppDomain.CurrentDomain.BaseDirectory; // 保存目标路径
-        const string targetFileName = "tinymapper.exe"; // 保存目标文件名
+    private void OpenMapper(AddressFamily srcFamily, int srcPort, IPAddress dstAddr, int dstPort) {
+        CloseMapper();
 
-        string fullPath = Path.Combine(targetFilePath, targetFileName);
-
-        try {
-            using var fileStream = GetFileStream("tinymapper.exe");
-            using var targetStream = new FileStream(fullPath, FileMode.Create, FileAccess.Write);
-
-            fileStream.CopyTo(targetStream);
-
-            Console.WriteLine(Language.GetTextValue(GetLocalizationKey("TinyMapperSaved")) + targetFilePath);
-        }
-        catch (Exception ex) {
-            Logger.Warn(Language.GetTextValue(GetLocalizationKey("TinyMapperSaveError")), ex);
-        }
+        _nativeMapper = new PortMapper(srcFamily, srcPort, dstAddr, dstPort);
+        _nativeMapper.Start();
     }
 
-    private void OpenTinyMapper(string arguments, AddressFamily srcFamily, int srcPort,
-                                IPAddress dstAddr, int dstPort) {
-        CloseTinyMapper();
-
-        if (Config.UseTinyPortMapper && Platform.IsWindows) {
-            var fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tinymapper.exe");
-            _tinyMapper = Process.Start(fileName, arguments);
-        } else {
-            _nativeMapper = new PortMapper(srcFamily, srcPort, dstAddr, dstPort);
-            _nativeMapper.Start();
-        }
-    }
-
-    private void CloseTinyMapper() {
-        if (_tinyMapper is not null) {
-            _tinyMapper.Kill();
-            _tinyMapper = null;
-        }
+    private void CloseMapper() {
         _nativeMapper?.Stop();
     }
 

@@ -16,7 +16,6 @@ public class Config : ModConfig
     [CustomModConfigItem(typeof(Input))] public string CustomIPv6Address;
     [DefaultValue("40800")] [CustomModConfigItem(typeof(Input))] public string CustomMappedRemotePort;
     [DefaultValue("26000")] [CustomModConfigItem(typeof(Input))] public string CustomMappedLocalPort;
-    [DefaultValue(true)] public bool UseTinyPortMapper;
     [CustomModConfigItem(typeof(IPv6Test1))] public object IPv6Test1;
     [CustomModConfigItem(typeof(IPv6Test2))] public object IPv6Test2;
     [CustomModConfigItem(typeof(IPv6Test3))] public object IPv6Test3;
