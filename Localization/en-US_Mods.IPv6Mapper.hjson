@@ -74,5 +74,10 @@ Configs: {
 			Label: Google Search: "How to enable IPv6"
 			Tooltip: ""
 		}
+
+		UseTinyPortMapper: {
+			Label: Use Tiny Port Mapper
+			Tooltip: ""
+		}
 	}
 }
