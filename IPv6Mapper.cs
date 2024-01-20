@@ -281,8 +281,8 @@ public class IPv6Mapper : Mod
                 foreach (var ipAddressInfo in ipProperties.UnicastAddresses) {
                     // 判断是否为IPv6地址和临时地址
                     if (ipAddressInfo is {
-                            IsDnsEligible: false, Address.IsIPv6LinkLocal: false,
-                            Address.AddressFamily: System.Net.Sockets.AddressFamily.InterNetworkV6
+                            IsDnsEligible: true, Address.IsIPv6LinkLocal: false,
+                            Address.AddressFamily: AddressFamily.InterNetworkV6
                         }) {
                         return ipAddressInfo.Address.ToString();
                     }
